@@ -5,3 +5,11 @@ dist/
 .env.*
 !.env.example
 
+
+/src/generated/prisma
+
+# Archivos auxiliares generados por Prisma
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
