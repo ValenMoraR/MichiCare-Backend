@@ -1,6 +1,9 @@
 
 import express from "express";
 import healthRoutes from "./interface/routes/health.routes.js";
+import authRoutes from "./interface/routes/auth.routes.js";
+import productRoutes from "./interface/routes/product.routes.js";
+import interactionRoutes from "./interface/routes/interaction.routes.js";
 
 const app = express();
 const PORT = 3000;
@@ -18,6 +21,15 @@ app.get("/", (_req, res) => {
 
 // Registra las rutas de comprobación.
 app.use(healthRoutes);
+
+// Registra las rutas de autenticación.
+app.use(authRoutes);
+
+// Registra las rutas del catálogo.
+app.use(productRoutes);
+
+// Registra las rutas de las interacciones.
+app.use(interactionRoutes);
 
 // Inicia el servidor.
 app.listen(PORT, () => {

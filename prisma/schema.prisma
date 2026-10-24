@@ -14,12 +14,14 @@ enum UserRole {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  nombre       String
-  email        String        @unique
-  passwordHash String
-  role         UserRole      @default(user)
-  interacciones Interaction[]
+  id              Int            @id @default(autoincrement())
+  nombre          String
+  email           String         @unique
+  passwordHash    String
+  role            UserRole       @default(user)
+  interacciones   Interaction[]
+  cartItems       CartItem[]
+  wishlistItems   WishlistItem[]
 
   @@map("users")
 }
@@ -31,22 +33,51 @@ model Product {
   precio         Float
   imagen         String?
   categoria      String
-  interacciones  Interaction[]
+  cartItems      CartItem[]
+  wishlistItems  WishlistItem[]
 
   @@map("products")
 }
 
 model Interaction {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  productId  Int
-  tipo       String
-  createdAt  DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  nombreMichi String
+  mensaje     String
+  createdAt   DateTime @default(now())
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([productId])
   @@map("interactions")
 }
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  cantidad  Int      @default(1)
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("cart_items")
+}
+
+model WishlistItem {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("wishlist_items")
+}
+
