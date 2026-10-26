@@ -46,15 +46,18 @@ export class LoginUser {
     }
 
     // Generar el token de autenticación.
+    // Duración del token, leída de las variables de entorno.
+    const expiresIn = (process.env.JWT_EXPIRES_IN ??
+      "1d") as jwt.SignOptions["expiresIn"];
+
+    // Generar el token de autenticación.
     const token = jwt.sign(
       {
         id: user.id,
         role: user.role,
       },
-      secret,
-      {
-        expiresIn: "1d",
-      },
+        secret,
+        { expiresIn },
     );
 
     // Devolver el token y los datos públicos del usuario.

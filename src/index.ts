@@ -1,17 +1,35 @@
+// Carga las variables del archivo .env antes que cualquier otro módulo.
+import "dotenv/config";
 
-import express from "express";
+import express, { type NextFunction, type Request, type Response } from "express";
+import cors from "cors";
 import healthRoutes from "./interface/routes/health.routes.js";
 import authRoutes from "./interface/routes/auth.routes.js";
 import productRoutes from "./interface/routes/product.routes.js";
 import interactionRoutes from "./interface/routes/interaction.routes.js";
 
 const app = express();
-const PORT = 3000;
 
-// Permite que el servidor interprete solicitudes con datos JSON.
+// Render y Railway asignan el puerto por variable de entorno.
+const PORT = Number(process.env.PORT) || 3000;
+
+// Orígenes autorizados para consumir la API (separa varios con coma).
+const origenesPermitidos = (process.env.FRONTEND_URL ?? "http://localhost:3001")
+  .split(",")
+  .map((url) => url.trim())
+  .filter(Boolean);
+
+// Permite que el frontend en Vercel consuma la API, solo desde esos orígenes.
+app.use(
+  cors({
+    origin: origenesPermitidos,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
 app.use(express.json());
 
-// Ruta inicial de la API.
 app.get("/", (_req, res) => {
   res.json({
     mensaje: "¡Bienvenido a la API de MichiCare!",
@@ -19,19 +37,22 @@ app.get("/", (_req, res) => {
   });
 });
 
-// Registra las rutas de comprobación.
 app.use(healthRoutes);
-
-// Registra las rutas de autenticación.
 app.use(authRoutes);
-
-// Registra las rutas del catálogo.
 app.use(productRoutes);
-
-// Registra las rutas de las interacciones.
 app.use(interactionRoutes);
 
-// Inicia el servidor.
+// Cualquier ruta que no exista responde 404 en JSON, sin HTML de Express.
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({ mensaje: "La ruta solicitada no existe" });
+});
+
+// Manejador central de errores: nunca devuelve el stack trace al cliente.
+app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  console.error("Error no controlado:", error);
+  res.status(500).json({ mensaje: "Ocurrió un error interno en el servidor" });
+});
+
 app.listen(PORT, () => {
-  console.log(`Servidor de MichiCare escuchando en http://localhost:${PORT}`);
+  console.log(`Servidor de MichiCare escuchando en el puerto ${PORT}`);
 });
