@@ -1,4 +1,3 @@
-
 import type { Request, Response } from "express";
 import { UpdateProduct } from "../../application/use-cases/update-product.use-case.js";
 
@@ -18,7 +17,7 @@ export async function putProduct(
       return;
     }
 
-    const { nombre, descripcion, precio, imagen, categoria } = req.body;
+    const { nombre, descripcion, precio, imagen, categoria, stock } = req.body;
 
     // Comprobar que se haya enviado al menos un campo.
     if (
@@ -26,7 +25,8 @@ export async function putProduct(
       descripcion === undefined &&
       precio === undefined &&
       imagen === undefined &&
-      categoria === undefined
+      categoria === undefined &&
+      stock === undefined
     ) {
       res.status(400).json({
         mensaje: "Debes enviar al menos un campo para actualizar",
@@ -40,6 +40,7 @@ export async function putProduct(
       (descripcion !== undefined && typeof descripcion !== "string") ||
       (categoria !== undefined && typeof categoria !== "string") ||
       (precio !== undefined && typeof precio !== "number") ||
+      (stock !== undefined && typeof stock !== "number") ||
       (imagen !== undefined &&
         imagen !== null &&
         typeof imagen !== "string")
@@ -57,6 +58,7 @@ export async function putProduct(
       precio,
       imagen,
       categoria,
+      stock,
     });
 
     res.status(200).json({
@@ -72,10 +74,23 @@ export async function putProduct(
         return;
       }
 
+      if (error.message === "INVALID_PRODUCT_PRICE") {
+        res.status(400).json({
+          mensaje: "El precio debe ser un número mayor que cero",
+        });
+        return;
+      }
+
+      if (error.message === "INVALID_PRODUCT_STOCK") {
+        res.status(400).json({
+          mensaje: "El stock debe ser un número entero mayor o igual a cero",
+        });
+        return;
+      }
+
       if (
         error.message === "INVALID_PRODUCT_ID" ||
-        error.message === "INVALID_PRODUCT_FIELDS" ||
-        error.message === "INVALID_PRODUCT_PRICE"
+        error.message === "INVALID_PRODUCT_FIELDS"
       ) {
         res.status(400).json({
           mensaje: "El identificador o los datos del producto no son válidos",

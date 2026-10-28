@@ -1,4 +1,3 @@
-
 import type { Request, Response } from "express";
 import { CreateProduct } from "../../application/use-cases/create-product.use-case.js";
 
@@ -9,7 +8,7 @@ export async function postProduct(
   res: Response,
 ): Promise<void> {
   try {
-    const { nombre, descripcion, precio, imagen, categoria } = req.body;
+    const { nombre, descripcion, precio, imagen, categoria, stock } = req.body;
 
     // Validar los campos de texto.
     if (
@@ -23,15 +22,16 @@ export async function postProduct(
       return;
     }
 
-    // Validar el precio y la imagen.
+    // Validar el precio, el stock y la imagen.
     if (
       typeof precio !== "number" ||
+      (stock !== undefined && typeof stock !== "number") ||
       (imagen !== undefined &&
         imagen !== null &&
         typeof imagen !== "string")
     ) {
       res.status(400).json({
-        mensaje: "El precio o la imagen no tienen un formato válido",
+        mensaje: "El precio, el stock o la imagen no tienen un formato válido",
       });
       return;
     }
@@ -42,6 +42,7 @@ export async function postProduct(
       precio,
       imagen,
       categoria,
+      stock,
     });
 
     res.status(201).json({
@@ -60,6 +61,13 @@ export async function postProduct(
       if (error.message === "INVALID_PRODUCT_PRICE") {
         res.status(400).json({
           mensaje: "El precio debe ser un número mayor que cero",
+        });
+        return;
+      }
+
+      if (error.message === "INVALID_PRODUCT_STOCK") {
+        res.status(400).json({
+          mensaje: "El stock debe ser un número entero mayor o igual a cero",
         });
         return;
       }

@@ -16,6 +16,11 @@ enum UserRole {
   user
 }
 
+enum InteractionType {
+  producto
+  michi
+}
+
 model User {
   id              Int            @id @default(autoincrement())
   nombre          String
@@ -47,6 +52,7 @@ model Product {
 model Interaction {
   id          Int      @id @default(autoincrement())
   userId      Int
+  tipo        InteractionType @default(producto)
   productId   Int?
   nombreMichi String
   mensaje     String

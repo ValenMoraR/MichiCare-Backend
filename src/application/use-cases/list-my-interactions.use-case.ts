@@ -1,4 +1,3 @@
-
 import { prisma } from "../../infrastructure/database/prisma.js";
 
 export class ListMyInteractions {
@@ -6,6 +5,14 @@ export class ListMyInteractions {
     return prisma.interaction.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
+      include: {
+        product: {
+          select: {
+            id: true,
+            nombre: true,
+          },
+        },
+      },
     });
   }
 }

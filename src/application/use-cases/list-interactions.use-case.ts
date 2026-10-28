@@ -1,4 +1,3 @@
-
 import { prisma } from "../../infrastructure/database/prisma.js";
 
 export class ListInteractions {
@@ -11,6 +10,12 @@ export class ListInteractions {
             id: true,
             nombre: true,
             email: true,
+          },
+        },
+        product: {
+          select: {
+            id: true,
+            nombre: true,
           },
         },
       },

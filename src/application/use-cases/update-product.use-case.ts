@@ -1,4 +1,3 @@
-
 import { prisma } from "../../infrastructure/database/prisma.js";
 
 interface UpdateProductInput {
@@ -8,6 +7,7 @@ interface UpdateProductInput {
   precio?: number;
   imagen?: string | null;
   categoria?: string;
+  stock?: number;
 }
 
 export class UpdateProduct {
@@ -35,6 +35,7 @@ export class UpdateProduct {
       precio?: number;
       imagen?: string | null;
       categoria?: string;
+      stock?: number;
     } = {};
 
     if (input.nombre !== undefined) {
@@ -67,6 +68,13 @@ export class UpdateProduct {
         throw new Error("INVALID_PRODUCT_PRICE");
       }
       data.precio = input.precio;
+    }
+
+    if (input.stock !== undefined) {
+      if (!Number.isInteger(input.stock) || input.stock < 0) {
+        throw new Error("INVALID_PRODUCT_STOCK");
+      }
+      data.stock = input.stock;
     }
 
     if (input.imagen !== undefined) {

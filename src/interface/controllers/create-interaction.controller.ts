@@ -9,7 +9,14 @@ export async function postInteraction(
   res: Response
 ): Promise<void> {
   try {
-    const { nombreMichi, mensaje, productId } = req.body;
+    const { tipo, nombreMichi, mensaje, productId } = req.body;
+
+    if (tipo !== "producto" && tipo !== "michi") {
+      res.status(400).json({
+        mensaje: "El tipo de consulta no es válido",
+      });
+      return;
+    }
 
     if (typeof nombreMichi !== "string" || typeof mensaje !== "string") {
       res.status(400).json({
@@ -18,7 +25,7 @@ export async function postInteraction(
       return;
     }
 
-    if (!Number.isInteger(productId) || productId <= 0) {
+    if (tipo === "producto" && (!Number.isInteger(productId) || productId <= 0)) {
       res.status(400).json({
         mensaje: "Debes indicar el producto sobre el que consultas",
       });
@@ -35,7 +42,8 @@ export async function postInteraction(
     // El usuario sale del token, nunca del body.
     const interaction = await createInteraction.execute({
       userId: req.user.id,
-      productId,
+      tipo,
+      productId: tipo === "producto" ? productId : undefined,
       nombreMichi,
       mensaje,
     });
@@ -55,6 +63,13 @@ export async function postInteraction(
     if (error instanceof Error && error.message === "INVALID_MESSAGE") {
       res.status(400).json({
         mensaje: "El mensaje debe tener al menos 10 caracteres",
+      });
+      return;
+    }
+
+    if (error instanceof Error && error.message === "PRODUCT_REQUIRED") {
+      res.status(400).json({
+        mensaje: "Debes indicar el producto sobre el que consultas",
       });
       return;
     }

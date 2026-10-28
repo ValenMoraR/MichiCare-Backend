@@ -1,4 +1,3 @@
-
 import { prisma } from "../../infrastructure/database/prisma.js";
 
 interface CreateProductInput {
@@ -7,6 +6,7 @@ interface CreateProductInput {
   precio: number;
   imagen?: string | null;
   categoria: string;
+  stock?: number;
 }
 
 export class CreateProduct {
@@ -15,6 +15,7 @@ export class CreateProduct {
     const descripcion = input.descripcion.trim();
     const categoria = input.categoria.trim();
     const imagen = input.imagen?.trim() || null;
+    const stock = input.stock ?? 0;
 
     // Validar los datos obligatorios.
     if (!nombre || !descripcion || !categoria) {
@@ -30,6 +31,11 @@ export class CreateProduct {
       throw new Error("INVALID_PRODUCT_PRICE");
     }
 
+    // Validar el stock: entero mayor o igual a cero.
+    if (!Number.isInteger(stock) || stock < 0) {
+      throw new Error("INVALID_PRODUCT_STOCK");
+    }
+
     // Guardar el producto en PostgreSQL.
     return prisma.product.create({
       data: {
@@ -38,6 +44,7 @@ export class CreateProduct {
         precio: input.precio,
         imagen,
         categoria,
+        stock,
       },
     });
   }

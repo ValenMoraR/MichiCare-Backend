@@ -1,8 +1,11 @@
 import { prisma } from "../../infrastructure/database/prisma.js";
 
+export type InteractionTipo = "producto" | "michi";
+
 interface CreateInteractionInput {
   userId: number;
-  productId: number;
+  tipo: InteractionTipo;
+  productId?: number;
   nombreMichi: string;
   mensaje: string;
 }
@@ -20,19 +23,31 @@ export class CreateInteraction {
       throw new Error("INVALID_MESSAGE");
     }
 
-    // El producto debe existir en el catálogo.
-    const product = await prisma.product.findUnique({
-      where: { id: input.productId },
-    });
+    // Una consulta sobre un producto debe apuntar a un producto del catálogo.
+    // Una consulta sobre el michi no lleva producto.
+    let productId: number | null = null;
 
-    if (!product) {
-      throw new Error("PRODUCT_NOT_FOUND");
+    if (input.tipo === "producto") {
+      if (input.productId === undefined) {
+        throw new Error("PRODUCT_REQUIRED");
+      }
+
+      const product = await prisma.product.findUnique({
+        where: { id: input.productId },
+      });
+
+      if (!product) {
+        throw new Error("PRODUCT_NOT_FOUND");
+      }
+
+      productId = product.id;
     }
 
     return prisma.interaction.create({
       data: {
         userId: input.userId,
-        productId: input.productId,
+        tipo: input.tipo,
+        productId,
         nombreMichi,
         mensaje,
       },
